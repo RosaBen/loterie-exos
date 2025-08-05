@@ -19,6 +19,15 @@ let selectedComplementaryNumber = null;
 const MAX_NUMBERS = 5;
 const MAX_TOTAL = 6;
 
+const checkLoto = () => {
+  return (
+    firstname.value.trim() !== "" &&
+    lastname.value.trim() !== "" &&
+    email.value.trim() !== "" &&
+    validateEmail(email.value)
+  );
+};
+
 function randomLotoNumbers() {
   let numbers = [];
   while (numbers.length < 5) {
@@ -161,14 +170,7 @@ initializeEventListeners();
 
 selectNumbers();
 
-const checkLoto = () => {
-  return (
-    firstname.value.trim() !== "" &&
-    lastname.value.trim() !== "" &&
-    email.value.trim() !== "" &&
-    validateEmail(email.value)
-  );
-};
+
 
 
 
@@ -209,22 +211,33 @@ function saveData() {
     complementaryNumber: selectedComplementaryNumber
   };
 
-  fetch('data.json', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData)
-  })
-    .then(response => response.json())
-    .then(data => {
-      alert("Vos données ont été sauvegardées !");
-      showDrawButton();
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert("Erreur lors de la sauvegarde des données");
-    });
+  // Récupérer les données existantes ou initialiser un tableau vide
+  let allPlayers = JSON.parse(localStorage.getItem('lotoPlayers') || '[]');
+
+  // Ajouter le nouveau joueur
+  allPlayers.push(userData);
+
+  // Sauvegarder dans localStorage
+  localStorage.setItem('lotoPlayers', JSON.stringify(allPlayers));
+
+  // Créer et télécharger le fichier JSON
+  const jsonString = JSON.stringify(allPlayers, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = 'loto_players.json';
+
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+
+  // Libérer l'URL
+  URL.revokeObjectURL(url);
+
+  alert("Vos données ont été sauvegardées et le fichier JSON a été téléchargé !");
+  showDrawButton();
 }
 
 function showDrawButton() {
@@ -240,13 +253,33 @@ function performDraw() {
   drawnNumbers.textContent = "Numéros tirés : " + draw.numbers.join(", ");
   complementaryNumberDisplay.textContent = "Numéro complémentaire : " + draw.complimentaryNumber;
 
-  // Vérifier les gagnants
-  fetch('data.json')
-    .then(response => response.json())
-    .then(players => {
-      const winners = checkWinners(players, draw);
-      displayWinners(winners);
-    });
+  // Récupérer les joueurs depuis localStorage
+  const players = JSON.parse(localStorage.getItem('lotoPlayers') || '[]');
+  const winners = checkWinners(players, draw);
+  displayWinners(winners);
+
+  // Sauvegarder le tirage dans un fichier JSON
+  const drawResult = {
+    drawDate: new Date().toISOString(),
+    drawnNumbers: draw.numbers,
+    complementaryNumber: draw.complimentaryNumber,
+    winners: winners
+  };
+
+  const jsonString = JSON.stringify(drawResult, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = 'loto_results.json';
+
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+
+  // Libérer l'URL
+  URL.revokeObjectURL(url);
 }
 
 function checkWinners(players, draw) {

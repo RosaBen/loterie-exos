@@ -13,11 +13,21 @@ const drawnNumbers = document.getElementById("drawn-numbers");
 const complementaryNumberDisplay = document.getElementById("complementary-number");
 const message = document.getElementById("message");
 const playAgainBtn = document.getElementById("play-again");
+const card1 = document.querySelector("#user-form .card:nth-child(1)");
 
 let selectedNumbers = [];
 let selectedComplementaryNumber = null;
 const MAX_NUMBERS = 5;
 const MAX_TOTAL = 6;
+
+function validateEmail(email) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailLength = email.length;
+  if (emailLength < 8 || emailLength > 30 || !regex.test(email)) {
+    return false;
+  }
+  return true;
+}
 
 const checkLoto = () => {
   return (
@@ -61,7 +71,6 @@ function createHtmlList(numbers, complimentaryNumber) {
   lotoNumbers.appendChild(liCompl);
   playerNumbers.style.display = "block";
 }
-
 
 
 function generateLotoTable() {
@@ -180,21 +189,8 @@ function initializeEventListeners() {
   });
 }
 
-// Initialiser les écouteurs d'événements
 initializeEventListeners();
 
-
-
-const card1 = document.querySelector("#user-form .card:nth-child(1)");
-
-function validateEmail(email) {
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const emailLength = email.length;
-  if (emailLength < 8 || emailLength > 30 || !regex.test(email)) {
-    return false;
-  }
-  return true;
-}
 
 function updateNumbersList() {
   if (selectedNumbers.length > 0 || selectedComplementaryNumber) {

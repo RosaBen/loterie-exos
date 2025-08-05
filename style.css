@@ -127,6 +127,23 @@ li{
   font-weight: bold;
   color: #34495e;
   font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.loto-number.selected {
+  background-color: #4e54c8;
+  color: white;
+}
+
+.loto-number.complementary {
+  background-color: #27ae60;
+  color: white;
+}
+
+.loto-number.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #submit {

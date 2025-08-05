@@ -304,6 +304,26 @@ function performDraw() {
   URL.revokeObjectURL(url);
 }
 
+function getMedal(matches, hasComplementary) {
+  if (matches === 5 && hasComplementary) return "🏆 Platine";
+  if (matches === 5) return "🥇 Or";
+  if (matches === 4) return "🥈 Argent";
+  if (matches === 3) return "🥉 Bronze";
+  if (matches === 2) return "🪶 Plume";
+  return null;
+}
+
+function getEncouragement() {
+  const messages = [
+    "Continuez d'essayer, la chance finira par sourire ! 🍀",
+    "Ne baissez pas les bras, la prochaine fois sera la bonne ! 💪",
+    "La persévérance est la clé du succès ! ⭐",
+    "Même les plus grands gagnants ont commencé par perdre ! 🌟",
+    "La roue tourne, votre tour viendra ! 🎡"
+  ];
+  return messages[Math.floor(Math.random() * messages.length)];
+}
+
 function checkWinners(players, draw) {
   return players.map(player => {
     const matchingNumbers = player.numbers.filter(num =>
@@ -312,25 +332,74 @@ function checkWinners(players, draw) {
     const matchingComplementary =
       String(player.complementaryNumber).padStart(2, "0") === draw.complimentaryNumber;
 
+    const medal = getMedal(matchingNumbers, matchingComplementary);
+
     return {
       name: `${player.firstname} ${player.lastname}`,
       matches: matchingNumbers,
-      complementary: matchingComplementary
+      complementary: matchingComplementary,
+      medal: medal
     };
   });
 }
 
 function displayWinners(winners) {
   const winnersList = document.createElement("div");
-  winnersList.innerHTML = "<h3>Résultats :</h3>";
+  winnersList.classList.add("winners-list");
+  winnersList.innerHTML = "<h3>Résultats du tirage :</h3>";
+
+  // Trier les gagnants par nombre de matches (décroissant)
+  winners.sort((a, b) => {
+    if (b.matches === a.matches) {
+      return b.complementary - a.complementary;
+    }
+    return b.matches - a.matches;
+  });
+
+  // Groupe pour les médaillés
+  const medalists = document.createElement("div");
+  medalists.classList.add("medalists");
+
+  // Groupe pour les autres joueurs
+  const others = document.createElement("div");
+  others.classList.add("other-players");
 
   winners.forEach(winner => {
-    const winnerText = `${winner.name}: ${winner.matches} numéro(s) correct(s)` +
-      (winner.complementary ? " + numéro complémentaire" : "");
-    const p = document.createElement("p");
-    p.textContent = winnerText;
-    winnersList.appendChild(p);
+    const playerCard = document.createElement("div");
+    playerCard.classList.add("player-result");
+
+    if (winner.medal) {
+      playerCard.innerHTML = `
+        <div class="player-medal ${winner.medal.split(' ')[1].toLowerCase()}">
+          <span class="medal-icon">${winner.medal.split(' ')[0]}</span>
+          <h4>${winner.name}</h4>
+          <p>${winner.matches} numéro(s) correct(s) ${winner.complementary ? "+ numéro complémentaire" : ""}</p>
+          <span class="medal-name">${winner.medal.split(' ')[1]}</span>
+        </div>
+      `;
+      medalists.appendChild(playerCard);
+    } else {
+      playerCard.innerHTML = `
+        <div class="player-no-medal">
+          <h4>${winner.name}</h4>
+          <p>${winner.matches} numéro(s) correct(s)</p>
+          <p class="encouragement">${getEncouragement()}</p>
+        </div>
+      `;
+      others.appendChild(playerCard);
+    }
   });
+
+  if (medalists.children.length > 0) {
+    winnersList.appendChild(medalists);
+  }
+  if (others.children.length > 0) {
+    const othersTitle = document.createElement("h4");
+    othersTitle.textContent = "Autres participants";
+    othersTitle.classList.add("others-title");
+    winnersList.appendChild(othersTitle);
+    winnersList.appendChild(others);
+  }
 
   result.appendChild(winnersList);
 }

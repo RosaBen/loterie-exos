@@ -120,10 +120,23 @@ function generateLotoTable() {
   lotoTable.appendChild(table);
 }
 
+function resetSelections() {
+  selectedNumbers = [];
+  selectedComplementaryNumber = null;
+  lotoNumbers.innerHTML = "";
+  playerNumbers.style.display = "none";
+  const allCells = document.querySelectorAll('.loto-number');
+  allCells.forEach(cell => {
+    cell.classList.remove('selected', 'complementary');
+  });
+}
+
 function initializeEventListeners() {
   generateNumbersBtn.addEventListener("click", function (event) {
     event.preventDefault();
     if (checkLoto()) {
+      resetSelections();
+      lotoTable.style.display = "none";
       const loto = randomLotoNumbers();
       selectedNumbers = loto.numbers.map(num => parseInt(num));
       selectedComplementaryNumber = parseInt(loto.complimentaryNumber);
@@ -136,6 +149,7 @@ function initializeEventListeners() {
   chooseNumbersBtn.addEventListener("click", function (event) {
     event.preventDefault();
     if (checkLoto()) {
+      resetSelections();
       generateLotoTable();
     } else {
       alert("Entrez vos informations");
@@ -156,21 +170,18 @@ function initializeEventListeners() {
   });
 
   playAgainBtn.addEventListener("click", function () {
-    selectedNumbers = [];
-    selectedComplementaryNumber = null;
-    lotoNumbers.innerHTML = "";
-    playerNumbers.style.display = "none";
+    resetSelections();
     result.style.display = "none";
     lotoTable.style.display = "none";
+    // Nettoyer les résultats précédents
+    while (result.firstChild) {
+      result.removeChild(result.firstChild);
+    }
   });
 }
 
 // Initialiser les écouteurs d'événements
 initializeEventListeners();
-
-selectNumbers();
-
-
 
 
 
@@ -249,6 +260,17 @@ function showDrawButton() {
 }
 
 function performDraw() {
+  // Nettoyer les résultats précédents
+  while (result.firstChild) {
+    result.removeChild(result.firstChild);
+  }
+
+  // Recréer le bouton de tirage
+  const drawBtn = document.createElement("button");
+  drawBtn.textContent = "Lancer le tirage";
+  drawBtn.addEventListener("click", performDraw);
+  result.appendChild(drawBtn);
+
   const draw = randomLotoNumbers();
   drawnNumbers.textContent = "Numéros tirés : " + draw.numbers.join(", ");
   complementaryNumberDisplay.textContent = "Numéro complémentaire : " + draw.complimentaryNumber;
